@@ -4,17 +4,21 @@ import pygame
 
 deck = list(range(1, 64))
 random.shuffle (deck)
-working_deck = [deck.pop() for i in range (7)]
-
-#def formatCard(i):
-#    return ("{:0>6}".format (bin(i) [2:])).replace('0', ' ')
+working_deck = [deck.pop() for i in range(7)]
+selected = {i:False for i in range(7)}
 
 def draw_all_cards ():
     for c in range(len (working_deck)):
         cx = c%4
         cy = c//4
         pygame.draw.rect(main_surface, 0x000000, (cx*150+30, cy*200+30, 110, 150), 0)
-        pygame.draw.rect(main_surface, 0x888888, (cx*150+30, cy*200+30, 110, 150), 5)
+
+        if selected[c]:
+            # selected card
+            pygame.draw.rect(main_surface, 0xffffff, (cx*150+30, cy*200+30, 110, 150), 5)
+        else:
+            # non-selected card
+            pygame.draw.rect(main_surface, 0x666666, (cx*150+30, cy*200+30, 110, 150), 5)
         for i,blip in enumerate('%0.6d' % int(bin(working_deck[c])[2:])):
             if blip == '1':
                 bx = i%2
@@ -29,29 +33,45 @@ clock = pygame.time.Clock()
 
 while working_deck:
     clock.tick(60)
-    for event in pygame.event.get():
-        pass
     
-    #output deck
-##    for i, card in enumerate(working_deck): #for text outputting the deck. WE HAVE VISUAL OUTPUT!!!! YAY! -SL
-##        print(i, ": ", formatCard(card))
     pygame.draw.rect(main_surface, 0x444444, (0,0,600,400), 0)
     draw_all_cards()
     window.blit(main_surface, (0,0))
     pygame.display.flip()
 
-    inp = input("What cards do you want to select? >>> ")
-    selection_cards = [i-1 for i in map(int, inp)]
-    selection = set(selection_cards)
+    # Get input
+    done_input = False
+    while not done_input:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                card_num_by_key = {a:b for b,a in enumerate('qwerasd')}
+                key = pygame.key.name(event.key)
+                if key in card_num_by_key:
+                    card = card_num_by_key[key]
+                    selected[card] = not selected[card]
+                elif key == 'return':
+                    if sum(selected.values()) > 0:
+                        done_input = True
+                else:
+                    print(key)
+                draw_all_cards()
+                window.blit(main_surface, (0,0))
+                pygame.display.flip()
+            elif event.type == pygame.QUIT:
+                exit()
+
+    selection = [i for i in selected if selected[i]]
     
     nim_sum = 0
-    #validate selections
+
+    # Validate selection
     for digit in selection:
         nim_sum ^= working_deck[digit]
     if nim_sum == 0:
         print("Valid")
 
-        #flash outline for correct cards. 
+        # Flash outline for correct cards
         for c in range (len (working_deck)):
             if c in selection:
                 cx = c%4
@@ -62,7 +82,8 @@ while working_deck:
         pygame.display.flip()
 
         pygame.time.wait(500 * len(selection) - 500)
-            
+
+        # Draw new cards to replace the old cards
         for digit in selection:
             try:
                 working_deck [int(digit)] = deck.pop()
@@ -70,8 +91,11 @@ while working_deck:
                 pass
     else:        
         print ("invalid combination, nim sum is %s" % bin(nim_sum))
-        pygame.draw.rect (main_surface, 0xff0000, (0, 0, 600, 400), 0) #flash background red
+        pygame.draw.rect (main_surface, 0xaa0000, (0, 0, 600, 400), 0) # Flash background red
         draw_all_cards()
         window.blit(main_surface, (0, 0))
         pygame.display.flip()
         pygame.time.wait(700)
+
+    for i in selected:
+        selected[i] = False
