@@ -11,6 +11,7 @@ working_deck = [deck.pop() for i in range(7)]
 selected = {i:False for i in range(7)}
 
 def draw_all_cards ():
+    """Draws the cards on playing field"""
     for c in range(len (working_deck)):
         cx = c%4
         cy = c//4
@@ -70,6 +71,8 @@ while working_deck:
                 key = pygame.key.name(event.key)
                 if key in card_num_by_key:
                     card = card_num_by_key[key]
+                    if card >= len(working_deck):
+                        break
                     selected[card] = not selected[card]
                 elif key == 'return': #submit that set
                     if sum(selected.values()) > 0:
@@ -90,7 +93,7 @@ while working_deck:
     
     # Validate selection    
     if nim_sum([working_deck [i] for i in selection]) == 0:
-        print("Valid. There are %d cards left in the deck." % len(deck))
+        print("Valid. There are %d cards left in the deck." % max (len(deck) - len (selection), 0))
 
         # Flash outline for correct cards
         for c in range (len (working_deck)):
@@ -112,6 +115,7 @@ while working_deck:
                 working_deck [digit] = None
         while None in working_deck:
             working_deck.remove(None)
+            selected.pop(len(selected) - 1)
             
     else:        
         print ("invalid combination, nim sum is %s" % bin(nim_sum([working_deck [i] for i in selection])))
