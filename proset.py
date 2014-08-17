@@ -2,6 +2,9 @@ import random
 import time
 import pygame
 
+#CONSTANTS
+card_num_by_key = {a:b for b,a in enumerate('qwerasd')}
+
 deck = list(range(1, 64))
 random.shuffle (deck)
 working_deck = [deck.pop() for i in range(7)]
@@ -26,6 +29,25 @@ def draw_all_cards ():
                 colors = [0xff0000, 0xff8800, 0xffff00, 0x00aa00, 0x0055ff, 0x8800ff]
                 pygame.draw.circle(main_surface, colors[i], (cx*150+bx*40+60, cy*200+by*40+60), 10, 0)
 
+def nim_sum(cards):
+    """Return the nim sum of cards by xoring them all"""
+    res = 0
+    for i in cards:
+        res ^= i
+    return res
+
+def find_set(working_deck):
+    """
+    Finds and returns a set. Currently works by brute forcing in O(2^n) time, but in theory,
+    could be reduced to O(n^2) by reducing to a set of linear equations and solving by Gaussian elimination.
+    I barely know what that means, but one of the QCSYS 2014 people does. 
+    """
+    import itertools
+    for number_of_cards in range (3, 8):
+        for subset in itertools.permutations(working_deck, number_of_cards):
+            if nim_sum(subset) == 0:
+                return subset
+
 pygame.init()
 window = pygame.display.set_mode((600, 400))
 main_surface = pygame.Surface ((600, 400))
@@ -45,14 +67,17 @@ while working_deck:
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                card_num_by_key = {a:b for b,a in enumerate('qwerasd')}
                 key = pygame.key.name(event.key)
                 if key in card_num_by_key:
                     card = card_num_by_key[key]
                     selected[card] = not selected[card]
-                elif key == 'return':
+                elif key == 'return': #submit that set
                     if sum(selected.values()) > 0:
                         done_input = True
+                elif key == 'space': #automatically find a set.
+                    found_set = find_set(working_deck) #a set known to work.
+                    for i, c in enumerate(working_deck):
+                        selected[i] = c in found_set
                 else:
                     print(key)
                 draw_all_cards()
@@ -63,13 +88,9 @@ while working_deck:
 
     selection = [i for i in selected if selected[i]]
     
-    nim_sum = 0
-
-    # Validate selection
-    for digit in selection:
-        nim_sum ^= working_deck[digit]
-    if nim_sum == 0:
-        print("Valid")
+    # Validate selection    
+    if nim_sum([working_deck [i] for i in selection]) == 0:
+        print("Valid. There are %d cards left in the deck." % len(deck))
 
         # Flash outline for correct cards
         for c in range (len (working_deck)):
@@ -81,16 +102,19 @@ while working_deck:
         window.blit(main_surface, (0,0))
         pygame.display.flip()
 
-        pygame.time.wait(500 * len(selection) - 500)
+        pygame.time.wait(200 * len(selection) - 500)
 
-        # Draw new cards to replace the old cards
+        # Draw new cards to replace the old cards. If no cards remain, replace them with empty cards. 
         for digit in selection:
             try:
-                working_deck [int(digit)] = deck.pop()
+                working_deck [digit] = deck.pop()
             except IndexError:
-                pass
+                working_deck [digit] = None
+        while None in working_deck:
+            working_deck.remove(None)
+            
     else:        
-        print ("invalid combination, nim sum is %s" % bin(nim_sum))
+        print ("invalid combination, nim sum is %s" % bin(nim_sum([working_deck [i] for i in selection])))
         pygame.draw.rect (main_surface, 0xaa0000, (0, 0, 600, 400), 0) # Flash background red
         draw_all_cards()
         window.blit(main_surface, (0, 0))
@@ -99,3 +123,8 @@ while working_deck:
 
     for i in selected:
         selected[i] = False
+
+pygame.draw.rect (main_surface, 0x444444, (0, 0, 600, 400), 0)  #clear screen when done. 
+window.blit(main_surface, (0, 0))
+pygame.display.flip()
+print ("Decks depleted")

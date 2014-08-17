@@ -7,6 +7,7 @@ For the graphics version (proset.py), you will need pygame http://www.pygame.org
 http://www.lfd.uci.edu/~gohlke/pythonlibs/#pygame (for 64-bit). 
 
 The cards correspond to qwer (top row) and asd (bottom row). Use those keys to select them. Use enter to submit a set.
+space displays a valid set. 
 
 History
 -------
