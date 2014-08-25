@@ -49,6 +49,21 @@ def find_set(working_deck):
             if nim_sum(subset) == 0:
                 return subset
 
+def get_card_from_coords(x,y):
+    """
+    Given coordinates, returns card index. Currently a non-robust function dependent on the
+    coordinates used to draw rectangles. So if that is changed, then this function must be
+    modified as well.
+    """
+    card = -1
+    if x < 630 and y < 430 and (x-30)%150 <= 110 and (y-30)%200 <= 150:
+        cx = (x-30)/150
+        cy = (y-30)/200
+        card = 4*cy + cx
+        if card >= 7:
+            card = -1
+    return card
+
 pygame.init()
 window = pygame.display.set_mode((600, 400))
 main_surface = pygame.Surface ((600, 400))
@@ -67,6 +82,7 @@ while working_deck:
     while not done_input:
         clock.tick(60)
         for event in pygame.event.get():
+            #Keyboard input
             if event.type == pygame.KEYDOWN:
                 key = pygame.key.name(event.key)
                 if key in card_num_by_key:
@@ -86,6 +102,18 @@ while working_deck:
                 draw_all_cards()
                 window.blit(main_surface, (0,0))
                 pygame.display.flip()
+                
+            #Mouse input
+            elif event.type == pygame.MOUSEBUTTONUP:
+                card = get_card_from_coords(event.pos[0], event.pos[1])
+                if card != -1:
+                    if card >= len(working_deck):
+                        continue
+                    selected[card] = not selected[card]
+                draw_all_cards()
+                window.blit(main_surface, (0,0))
+                pygame.display.flip()
+
             elif event.type == pygame.QUIT:
                 exit()
 
