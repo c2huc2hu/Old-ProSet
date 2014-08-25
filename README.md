@@ -15,7 +15,8 @@ We were struck by inspiration at QCSYS 2014 and decided to play Proset, but we d
 
 TODO
 ----
-- Implement mouse input
+
 - Make it stop crashing if the window loses focus (possibly a result of implementing mouse input)
 - Make it more idiot proof (sanitize input)
+- Handle end of game (i.e. new game)
 - Port to not python. 
