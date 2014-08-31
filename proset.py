@@ -1,5 +1,4 @@
 import random
-import time
 import pygame
 
 #CONSTANTS
@@ -57,8 +56,8 @@ def get_card_from_coords(x,y):
     """
     card = -1
     if x < 630 and y < 430 and (x-30)%150 <= 110 and (y-30)%200 <= 150:
-        cx = (x-30)/150
-        cy = (y-30)/200
+        cx = (x-30)//150
+        cy = (y-30)//200
         card = 4*cy + cx
         if card >= 7:
             card = -1
